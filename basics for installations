@@ -5,3 +5,4 @@ sudo usermod -aG docker jenkins
 newgrp docker
 newgrp jenkins (optional)
 sudo apt install docker-compose-v2
+sudo systemctl restart jenkins
