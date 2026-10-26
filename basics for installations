@@ -1,0 +1,7 @@
+install jenkins (install from google)
+sudo apt install docker.io -y
+sudo usermod -aG docker $USER
+sudo usermod -aG docker jenkins
+newgrp docker
+newgrp jenkins (optional)
+sudo apt install docker-compose-v2
