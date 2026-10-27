@@ -1,0 +1,59 @@
+sudo docker run -itd --name sonarqube-server  -p 9000:9000 sonarqube:lts-community
+
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Pull from GitHub') {
+            steps {
+                git url: 'https://github.com/ujer23/two-tier-flask-app.git',
+                    branch: 'master'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'docker build -t my-app .'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Test done'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    script {
+                        def scannerHome = tool 'sonarqube'
+
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                              -Dsonar.projectKey=flask-app \
+                              -Dsonar.projectName=flask-app \
+                              -Dsonar.sources=. \
+                              -Dsonar.exclusions=**/venv/**,**/.git/**,**/__pycache__/**
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'docker compose up -d --build flask-app'
+            }
+        }
+    }
+}
