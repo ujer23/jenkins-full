@@ -1,0 +1,54 @@
+#simple push to s3
+pipeline {
+    agent any
+    
+    stages{
+        stage("file"){
+            steps{
+                sh "echo hello > hello.txt"
+            }
+        }
+        stage("create bucket"){
+            steps{
+                sh "aws s3 mb s3://uju-0011"
+            }
+        }
+        stage("send to git"){
+            steps{
+                sh "aws s3 cp hello.txt s3://uju-0011"
+            }
+        }
+    }
+
+}
+
+#push to s3 .war file using maven
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Pull from GitHub') {
+            steps {
+                git url: 'https://github.com/ujer23/jenkin-maven.git',
+                    branch: 'main'
+            }
+        }
+
+        stage('Build WAR') {
+            steps {
+                dir('my-app') {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+
+        stage('Upload WAR to S3') {
+            steps {
+                dir('my-app') {
+                    sh 'aws s3 cp target/my-app-1.0-SNAPSHOT.war s3://uju-0011/my-app-1.0-SNAPSHOT.war'
+                }
+            }
+        }
+    }
+}
