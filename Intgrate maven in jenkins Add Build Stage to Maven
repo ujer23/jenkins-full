@@ -1,0 +1,40 @@
+#project
+mvn archetype:generate -DgroupId=com.mycompany.app -DartifactId=my-app -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.5 -DinteractiveMode=false
+-----------------------------------------------------------------------------------------------------------------------------------------------
+#java version and cleanup
+sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+
+sudo update-alternatives --set javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
+
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+
+java -version
+javac -version
+mvn -version
+
+mvn clean package
+----------------------------------------------------------------------------------------------------------------------------------------------
+#pipeline
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven3'
+    }
+
+    stages {
+        stage('Pull from GitHub') {
+            steps {
+                git url: 'YOUR_GITHUB_REPOSITORY_URL',
+                    branch: 'main'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+    }
+}
