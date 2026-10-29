@@ -1,0 +1,20 @@
+pipeline{
+    agent any;
+    stages{
+        stage("git"){
+            steps{
+                git url: "https://github.com/ujer23/jenkin-terraform" , branch: "main"
+            }
+        }
+        stage("terraform env"){
+            steps{
+                sh "terraform init"
+            }
+        }
+        stage("terraform apply"){
+            steps{
+                sh "terraform apply -auto-approve"
+            }
+        }
+    }
+}
