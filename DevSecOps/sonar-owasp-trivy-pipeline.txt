@@ -36,7 +36,7 @@ pipeline{
         }    
         stage("owasp dependency check"){
             steps{
-                dependencyCheck additionalArguments: '--scan ./', odcInstallation: "dc"
+                dependencyCheck additionalArguments: '--scan ./', odcInstallation: "dc", nvdCredentialsId: 'nvd-api-key'
                 dependencyCheckPublisher pattern: "**/dependency-check-report.xml"
             }
         }
