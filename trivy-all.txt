@@ -1,0 +1,35 @@
+stage("Trivy FS Scan") {
+    steps {
+        sh "trivy fs --format table -o trivy-fs-report.txt ."
+    }
+}
+
+stage("Trivy Repo Scan") {
+    steps {
+        sh "trivy repo --format table -o trivy-repo-report.txt ."
+    }
+}
+
+stage("Trivy Config Scan") {
+    steps {
+        sh "trivy config --format table -o trivy-config-report.txt ."
+    }
+}
+
+stage("Trivy Secret Scan") {
+    steps {
+        sh "trivy fs --scanners secret --format table -o trivy-secret-report.txt ."
+    }
+}
+
+stage("Trivy Image Scan") {
+    steps {
+        sh "trivy image --format table -o trivy-image-report.txt wanderlust:latest"
+    }
+}
+
+stage("Trivy Kubernetes Scan") {
+    steps {
+        sh "trivy k8s cluster"
+    }
+}
