@@ -1,0 +1,57 @@
+#trivy Installation (#ubuntu)
+sudo apt-get install wget gnupg
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt-get update
+sudo apt-get install trivy
+
+#owasp (#jenkins plugins)
+
+Install the OWASP Dependency-Check plugin.
+Go to Manage Jenkins → Tools.
+Configure Dependency-Check installation.
+Give it the name dc.
+
+#sonarqube
+sudo docker run -itd --name sonarqube-server  -p 9000:9000 sonarqube:lts-community (#ubuntu)
+
+
+pipeline{
+    agent any;
+    environment{
+        SONAR_HOME = tool "sonar"
+    }
+    stages{
+        stage("git url"){
+            steps{
+                git url: "https://github.com/ujer23/wanderlust.git", branch: "devops"
+            }
+        }
+        stage("sonarqube analysis"){
+            steps{
+                withSonarQubeEnv("sonar"){
+                    sh "$SONAR_HOME/bin/sonar-scanner -Dsonar.projectName=wanderlust -Dsonar.projectKey=wanderlust -Dsonar.host.url=http://44.223.8.176:9000/"
+                }
+            }
+        }    
+        stage("owasp dependency check"){
+            steps{
+                dependencyCheck additionalArguments: '--scan ./', odcInstallation: "dc"
+                dependencyCheckPublisher pattern: "**/dependency-check-report.xml"
+            }
+        }
+        stage("sonar quality gate scan"){
+            steps{
+                timeout(time: 2, unit: "MINUTES"){
+                    waitForQualityGate abortPipeline: false
+                }
+                
+            }
+        }
+        stage("trivy"){
+            steps{
+                sh "trivy fs --format table -o trivy-file-report.html ."
+            }
+        }        
+    }
+}    
